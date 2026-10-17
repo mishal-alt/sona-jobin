@@ -2094,16 +2094,23 @@ function A({
 }
 function E(e, t = 'invitation') {
   let a = e.end ?? new Date(e.start.getTime() + 108e5),
-    r = new URLSearchParams({
-      t: e.title,
-      s: (0, n.toUtcStamp)(e.start),
-      e: (0, n.toUtcStamp)(a),
-      l: e.location,
-      d: e.details,
-      u: e.uid,
-      f: t,
-    })
-  return `/api/ics?${r.toString()}`
+    esc = (x) => String(x ?? '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;'),
+    ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Zetron Tech//Invitation//EN',
+      'BEGIN:VEVENT',
+      `UID:${e.uid}`,
+      `DTSTAMP:${(0, n.toUtcStamp)(new Date())}`,
+      `DTSTART:${(0, n.toUtcStamp)(e.start)}`,
+      `DTEND:${(0, n.toUtcStamp)(a)}`,
+      `SUMMARY:${esc(e.title)}`,
+      `LOCATION:${esc(e.location)}`,
+      `DESCRIPTION:${esc(e.details)}`,
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n')
+  return `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`
 }
 function B(e, t) {
   if (!e.event_date) return null
